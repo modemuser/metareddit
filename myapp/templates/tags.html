@@ -1,0 +1,21 @@
+<%inherit file="base.html"/>
+
+<div class="title">
+Showing relevant tags
+</div>
+
+
+<div id="tagcloud">
+<% from math import log %>
+%for tag in tags:
+<%
+    if tag.score < 3:
+        continue
+    subreddit_count = len(tag.subreddits)
+    f = log(tag.score+3) * .6
+%>
+<a class="tag" href="${url_for('tag', name=tag.name)}"
+    style="font-size:${f}em;"
+    title="${subreddit_count} reddits">[${tag.name}]</a>
+%endfor
+</div>

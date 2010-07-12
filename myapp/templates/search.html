@@ -1,0 +1,11 @@
+<%inherit file="base.html"/>
+
+
+<form id="gsearch_form" action="${url_for('search')}" onsubmit="return gsearch()">
+    <button type="submit" style="float: right;">search</button>
+    <input type="text" maxlength="31" id="gsearch_term" name="q"/>
+    <label for="gsearch_reddits">only in /r/</label>
+    <input type="text" id="gsearch_reddits" class="auto" name="r"/>
+</form>
+
+<div id="gsearch_result"></div>

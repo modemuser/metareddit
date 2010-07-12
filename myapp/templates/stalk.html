@@ -1,0 +1,71 @@
+<%inherit file="base.html"/>
+
+<form id="form_stalk" action="${url_for('stalk')}">
+    <input type="text" maxlength="20" name="user" />
+    <button type="submit" id="stalkbutton">stalk</button>
+</form>
+<span id="stalkstatus" class="selected"></span>
+
+
+%if username is not None:
+    <h2>${username}</h2>
+    %if lastseen is not None:
+        <% from datetime import datetime %>
+        <p>
+            redditor since ${registered.strftime('%Y-%m-%d')}, 
+            last seen <span title="${lastseen.strftime('%Y-%m-%d')}">
+                ${'today' if lastseen.date() == datetime.utcnow().date() else self.func.timesince(lastseen) + ' ago'}
+            </span>
+            <br/>
+            <a href="http://www.reddit.com/user/${username}">user page</a> - 
+            <a href="http://www.reddit.com/user/${username}/comments.rss">rss comments</a> - 
+            <a href="http://www.reddit.com/user/${username}/submitted.rss">rss submissions</a> 
+        </p>
+        <p>
+            <span class="title"><strong>${self.func.nice_number(links.karma)}</strong></span> link karma
+            <br/>
+            %if links.count > 0:
+            <span class="tagline">
+                <%
+                    avg_ups = float(links.ups)/links.count
+                    avg_downs = float(links.downs)/links.count
+                %>
+                on average: ${'%.1f' % (avg_ups)} up votes,
+                ${'%.1f' % (avg_downs)} down votes,
+                ${100*links.ups/(links.ups+links.downs)}% like it
+                <br/>
+                estimated links posted: ${self.func.nice_number(int(links.karma/(avg_ups))) if links.count == 50 else links.count}
+            </span>
+            %endif
+        </p>
+        <p>
+            <span class="title"><strong>${self.func.nice_number(comments.karma)}</strong></span> comment karma
+            <br/>
+            %if comments.count > 0:
+            <span class="tagline">
+                <%
+                    avg_ups = float(comments.ups)/comments.count
+                    avg_downs = float(comments.downs)/comments.count
+                %>
+                on average: ${'%.1f' % (avg_ups)} up votes,
+                ${'%.1f' % (avg_downs)} down votes,
+                ${100*comments.ups/(comments.ups+comments.downs)}% like it
+                <br/>
+                estimated comments posted: ${self.func.nice_number(int(comments.karma/(avg_ups))) if comments.count == 50 else comments.count}
+            </span>
+            %endif
+        </p>
+        <div id="cloud">
+            %for r in reddits:
+                <a class="subreddit" href="/r/${r}">${r}</a><br/>
+            %endfor
+        </div>
+    %else:
+        %if registered is not None:
+            redditor for <span title="${registered.strftime('%Y-%m-%d')}">${self.func.timesince(registered)}</span> 
+            <p>No activity.</p>
+        %else:
+            User not found.
+        %endif
+    %endif
+%endif

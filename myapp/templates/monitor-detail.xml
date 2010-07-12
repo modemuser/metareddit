@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<rss version="2.0">
+    <% from datetime import datetime %>
+    <channel>
+        <title>metareddit monitor: "${keyword.keyword}"</title>
+        <link>${url_for('monitor', hash=keyword.hash, slug=keyword.keyword, _external=True)}</link>
+        <description>monitoring reddit comments and submissions mentioning "${keyword.keyword}"</description>
+        <pubDate>${datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')}</pubDate>
+        <lastBuildDate>${datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')}</lastBuildDate>
+        <ttl>10</ttl>
+    %for m in keyword.mentions:
+        <item>
+            <title>${'comment' if m.comment_id is not None else 'submission'} by ${m.author} in ${m.subreddit}</title>
+            <link>${m.get_link()}</link>
+            <pubDate>${m.created.strftime('%a, %d %b %Y %H:%M:%S GMT')}</pubDate>
+        </item>
+    %endfor
+    </channel>
+</rss>

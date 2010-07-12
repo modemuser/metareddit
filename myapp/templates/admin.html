@@ -1,0 +1,105 @@
+<%inherit file="base.html"/>
+
+<script type="text/javascript">
+function restartmonitors() {
+    $.get(
+        '${url_for('restartmonitors')}',
+        function(data) {
+            $('#restartstatus').html(data);
+        },
+        'html'
+    );
+    return false;
+}
+
+function clearcache() {
+    $.get(
+        '${url_for('clearcache')}',
+        function(data) {
+            $('#cachestatus').html(data);
+        },
+        'html'
+    );
+    return false;
+}
+
+function cleandb() {
+    $.get(
+        '${url_for('cleandb')}',
+        function(data) {
+            $('#dbstatus').html(data);
+        },
+        'html'
+    );
+    return false;
+}
+</script>
+
+<h2>admin</h2>
+
+<%
+    from myapp.env import session
+    from myapp.models import User, Subreddit, Vote, Tag, SubredditTag, Keyword, Mention
+    reddits = session.query(Subreddit).count()
+    logos = session.query(Subreddit).filter_by(logo=True).count()
+    users = session.query(User).count()
+    tags = session.query(Tag).count()
+    stags = session.query(SubredditTag).count()
+    votes = session.query(Vote).count()
+    keywords = session.query(Keyword).count()
+    mentions = session.query(Mention).count()
+    
+    import commands
+    ps = commands.getoutput('ps -A')
+    supervisord = commands.getoutput('supervisorctl -c /home/www/vhost/metareddit/supervisord.conf status')
+    psgrep = commands.getoutput('ps aux | grep monitor')
+    
+    last_mention_comments = session.query(Mention).filter(Mention.comment_id!=None).order_by(Mention.created.desc()).first()
+    last_mention_submissions = session.query(Mention).filter(Mention.comment_id==None).order_by(Mention.created.desc()).first()
+
+    from myapp.env import cache
+    from myapp.lib.memoize import _hash
+    comment_count = cache.get(_hash('comment_count'))
+    submission_count = cache.get(_hash('submission_count'))
+%>
+%if psgrep.count('monitor') == 4:
+    <div class="title">monitor running</div>
+%else:
+    <div class="title selected">monitor NOT running</div>
+%endif
+
+${supervisord.replace('\n', '<br/>')}<br/>
+last comment mention ${self.func.timesince(last_mention_comments.created)} ago<br/>
+last submission mention ${self.func.timesince(last_mention_submissions.created)} ago<br/>
+
+<a id="restartmonitors" href="#" onclick="return restartmonitors()">restart monitors</a>
+<span id="restartstatus" class="selected"></span>
+
+<br/>
+<br/>
+
+%if 'memcached' in ps:
+    <div class="title">memcached running</div>
+%else:
+    <div class="title selected">memcached NOT running</div>
+%endif
+
+<a id="clearcache" href="#" onclick="return clearcache()">clear cache</a>
+<span id="cachestatus" class="selected"></span>
+
+<br/>
+<br/>
+<div class="title">db stats</div>
+${reddits} reddits<br/>
+${logos} logos saved<br/>
+${users} user<br/>
+${tags} tags<br/>
+${stags} tagged<br/>
+${votes} votes<br/>
+${keywords} keywords<br/>
+${mentions} mentions<br/>
+
+<a id="cleandb" href="#" onclick="return cleandb()">clean db</a>
+<span id="dbstatus" class="selected"></span>
+
+

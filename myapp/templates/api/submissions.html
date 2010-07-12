@@ -1,0 +1,22 @@
+<%
+    import re
+    from myapp.lib.timetool import unix_timesince
+%>
+
+%for s in submissions:
+<%
+    s = s['data']
+    title_slug = re.sub(r'[^a-z_]', '', '_'.join(s['title'].lower().split(' ')[:7]))
+%>
+<div class="submission">
+<a href="${s['url']}" class="title">${s['title']}</a>
+<span class="domain">(${s['domain']})</span>
+<br/>
+<div class="tagline">
+    ${s['score']} points | 
+    <a href="http://www.reddit.com/r/${s['subreddit']}/comments/${s['id']}/${title_slug}/">${s['num_comments']} comments</a> | 
+    submitted ${unix_timesince(s['created_utc'])} ago by 
+    <a href="http://www.reddit.com/user/${s['author']}">${s['author']}</a>
+</div>
+</div>
+%endfor

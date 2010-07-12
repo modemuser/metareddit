@@ -1,0 +1,257 @@
+                                                                                                                                    
+<%def name="markdown(raw)">
+<% from markdown import markdown %>
+${markdown(raw)}
+</%def>
+
+                                                                                                                                    
+<%def name="timesince(d)" filter="trim">
+<% from myapp.lib.timetool import timesince %>
+${timesince(d)}
+</%def>
+
+
+<%def name="nice_number(number)" filter="trim">
+<%
+    def splitthousands(s, sep=','):  
+        if len(s) <= 3: 
+            return s  
+        return splitthousands(s[:-3], sep) + sep + s[-3:]
+%>
+${splitthousands(str(number))}
+</%def>
+
+
+<%def name="days_ago(d)" filter="trim">
+<% from myapp.lib.timetool import timesince, days_ago %>
+${timesince(days_ago(d))}
+</%def>
+
+
+<%def name="bigtag(tag)">
+<div class="bigtag" id="tag_${tag.tag.name}"> 
+<%
+    from myapp.lib.auth import generate_token      
+    upmod = downmod = False
+    if request.logged_in:
+        for v in tag.votes:
+            if v.user.name == request.user:
+                if v.vote == 1:
+                    upmod = True
+                elif v.vote == -1:
+                    downmod = True
+                break
+%>
+    <div class="vote" id="${generate_token(str(tag.uid))}">
+        <span class="arrow ${'upmod' if upmod else 'up'}" id="vote_${tag.uid}_up"></span>
+        <span class="arrow ${'downmod' if downmod else 'down'}" id="vote_${tag.uid}_down"></span>
+    </div>
+    <a href="${url_for('tag', name=tag.tag.name)}">[${tag.tag.name}]</a>
+    <br/>
+    <span class="score hidden">${sum(v.vote for v in tag.votes)}</span>
+</div>
+</%def>
+
+
+<%def name="tag(tag)"> 
+<div id="headline">
+    <%
+        r = '+'.join(s.subreddit.url for s in tag.subreddits)
+    %>
+    <a href="${url_for('tag', name=tag.name)}">permalink</a> | 
+    <a href="${url_for('subreddit', name='') + r}">all descriptions</a> | 
+    <a href="${url_for('reddits', view='cloud', filter='filter', t=tag.name)}" title="filter out smaller or less active reddits">filter</a> | 
+    <a href="${url_for('search')}?r=${r}" title="search within these reddits">search</a> | 
+    <a href="http://www.reddit.com/r/${r}" title="browse multi-reddit on reddit.com">browse</a>
+</div>
+<%
+    subreddits = []
+    for s in tag.subreddits:
+        subreddits.append(s.subreddit)
+    subreddits.sort(lambda x, y: cmp(x.url.lower(), y.url.lower()))
+%>
+${subreddit_cloud(subreddits)}
+</%def>
+
+
+<%def name="subreddit_cloud(subreddits)">
+    <%
+        from math import log
+        if subreddits:
+            max_age = max(s.all_age_latest for s in subreddits)
+        else:
+            max_age = 1
+    %>
+    <div id="cloud">
+    %for s in subreddits:
+        <%
+            font_size = '%.3fem' % (log(s.subscribers+20) * .19)
+            if max_age != 0:
+                percent_black = (max_age - s.all_age_latest) / float(max_age)
+            else:
+                percent_black = 1
+            b = 200 - int(percent_black * 200)
+            hex_color = 3 * ('%02x' % b)
+        %>
+        <a class="subreddit" 
+            href="${url_for('subreddit', name=s.url, _external=False)}" 
+            title="${s.title | h} (${nice_number(s.subscribers)} subscribers)"
+            style="font-size:${font_size}; color:#${hex_color};">${s.url}</a>  
+    %endfor
+    </div>
+</%def>
+
+
+<%def name="subreddit(subreddit)">
+<div id="tags">
+    <% from myapp.lib.auth import generate_token %>
+    %if len(subreddit.tags) > 0:
+        <p class="tagline">this reddit has been tagged:</p>
+        <% subreddit.tags.sort(lambda x, y: y.score - x.score) %>
+        %for t in subreddit.tags:
+            %if t.score > -10:
+                ${bigtag(t)}
+            %endif
+        %endfor
+    %else:
+        <p class="tagline">no tags added yet, be the first:</p>
+    %endif
+    <div class="clear"></div>
+    <form id="add_tag" action="">
+        <input type="text" id="add_tag_name" />
+        <input type="submit" id="add_tag_submit" value="add tag"/>
+        <input type="hidden" id="add_tag_id" value="${subreddit.id}"/>
+        <input type="hidden" id="add_tag_token" value="${generate_token(subreddit.id)}"/>
+    </form>
+</div>
+<div class="clearleft"></div>
+<div class="redditdata">
+    <a href="http://www.reddit.com/r/${subreddit.url}" class="title">${subreddit.title}</a> 
+    <span class="domain">(/r/${subreddit.url})</span><br/>
+    %if subreddit.description:
+        <div class="description">${markdown(subreddit.description)}</div>
+    %endif
+    <div class="tagline">
+        ${nice_number(subreddit.subscribers)} subscribers -  
+        a community for ${timesince(subreddit.created)} - 
+        <span id="subs_${subreddit.url}">last post 
+        %if subreddit.all_age_latest == 0:
+            today
+        %else:
+            ${days_ago(subreddit.all_age_latest)} ago
+        %endif
+        [+]</span>
+    </div>
+</div>
+<div class="clear"></div>
+<div id="submissions_${subreddit.url}"></div>
+</%def>
+
+
+<%def name="loginform()">
+<% 
+from myapp.lib.auth import generate_token
+from myapp.lib.utils import url_for
+%>
+<div class="login">
+<div class="regform">
+    <h3>create a new account</h3>
+    <p class="tagline">all it takes is a username and password</p>
+    <div>
+        <form id="login_reg" method="post" action="${url_for('login')}" onsubmit="return send_post(this, 'reg')">
+            <input type="hidden" name="do" value="reg" />
+            <input value="" id="reason_reg" type="hidden" />
+            <input type="hidden" id="token_reg" name="token" value="${generate_token('reg')}" />
+            <ul>
+                <li>
+                    <label for="user_reg">username:</label>
+                    <input id="user_reg" type="text" maxlength="20" name="username" />
+                </li>
+                <li>
+                    <label for="passwd_reg">password:</label>
+                    <input id="passwd_reg" type="password" maxlength="20" name="passwd"/>
+                </li>
+                <li>
+                    <label for="passwd2_reg">verify password:</label>
+                    <input id="passwd2_reg" type="password" maxlength="20" name="passwd2" />
+                </li>
+                <li>
+                    <input type="checkbox" id="rem_reg" value="on" name="rem" />
+                    <label for="rem_reg" class="remember">remember me</label>
+                </li>
+            </ul>
+            <br />
+            <p>
+                <input type="submit" value="create account" />
+                <span id="status_reg"></span>
+            </p>
+        </form>
+    </div>
+</div>
+
+<div class="loginform">
+    <h3>login</h3>
+    <p class="tagline">already have an account and just want to login?</p>
+    <div>
+        <form id="login_login" method="post" action="${url_for('login')}" onsubmit="return send_post(this, 'login')">
+            <input type="hidden" name="do" value="login" />
+            <input value="" id="reason_login" type="hidden" />
+            <input type="hidden" id="token_login" name="token" value="${generate_token('login')}" />
+            <ul>
+                <li>
+                    <label for="user_login">username:</label>
+                    <input id="user_login" type="text" maxlength="20" name="usename" />
+                </li>
+                <li>
+                    <label for="passwd_login">password:</label>
+                    <input id="passwd_login" type="password" maxlength="20" name="passwd" />
+                </li>
+                <li>
+                    <input type="checkbox" id="rem_login" value="on" name="rem" />
+                    <label for="rem_login" class="remember">remember me</label>
+                </li>
+            </ul>
+            <br/>
+            <p>
+                <input type="submit" value="login" />
+                <span id="status_login"></span>
+            </p>
+        </form>
+    </div>
+</div>
+</div>
+</%def>
+
+
+<%def name="print_mentions(keyword, limit=50)">
+<%
+    from datetime import datetime
+    from myapp.env import session
+    from myapp.lib.timetool import timesince
+    keyword.accessed = datetime.utcnow()
+    session.commit()
+    since = timesince(keyword.created)
+    url = url_for('monitor', hash=keyword.hash, slug=keyword.keyword)
+    link = '<a href="%s">link</a>' % url 
+    feed = '<a href="%s.rss">feed</a>' % url
+    tagline = '<div class="tagline">monitoring for %s - %s - %s</div>' % (since, link, feed)
+%>
+%if len(keyword.mentions) == 0:
+    <span class="title"><strong>${keyword.keyword}</strong></span> was not mentioned yet.<br/>
+    ${tagline}
+%else:
+    <span class="title"><strong>${keyword.keyword}</strong></span> was mentioned in:<br/>
+    ${tagline}
+    <table>
+    %for i, m in enumerate(keyword.mentions):
+        <% if i >= limit: break %>
+        <tr>
+            <td><a href="${m.get_link()}">${'comment' if m.comment_id is not None else 'submission'}</a></td>
+            <td>by <a href="${url_for('stalk', user=m.author)}">${m.author}</a></td>
+            <td>in <a href="${url_for('subreddit', name=m.subreddit)}">${m.subreddit}</a></td>
+            <td>${timesince(m.created)} ago</td>
+        </tr>
+    %endfor
+    </table>
+%endif
+</%def>

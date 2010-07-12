@@ -1,0 +1,13 @@
+<%inherit file="base.html"/>
+
+<form id="form_monitor" action="${url_for('monitor')}" method="post">
+    <input id="monitor_keyword" type="text" maxlength="20" name="keyword" />
+    <button type="submit" id="stalkbutton">monitor</button>
+</form>
+<div id="monitorstatus" class="selected"></div>
+<%
+l = []
+for k in keywords:
+    l.append('<a href="%s">%s</a>' % (url_for('monitor', hash=k.hash, slug=k.keyword), k.keyword))
+%>
+Some examples: ${', '.join(l)}

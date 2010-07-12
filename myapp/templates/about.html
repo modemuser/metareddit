@@ -1,0 +1,54 @@
+<%inherit file="base.html"/>
+
+<%
+content = [
+    ["what is this?", 
+        """
+        In short: a website about <a href="http://www.reddit.com">reddit.com</a>.
+        A bit longer: Originally, I used the <a href="http://code.reddit.com/wiki/API">reddit API</a> to compile
+        <a href="http://www.reddit.com/r/reddit.com/comments/aw2x1/top10_of_subreddits/">top 10 lists of subreddits</a>. 
+        But in the process it became apparent that this doesn't do the thousands of active reddits justice. 
+        Thus a new <a href="%s">/reddits</a> was born. 
+        There was also no way to organize multireddits (combining reddits, like so: reddit.com/r/pics+WTF). 
+        That's where <a href="%s">/tags</a> comes in. <br/>
+        If you ever tried to search for something on reddit, you know why there is <a href="%s">/search</a>. 
+        <a href="%s">/stalk</a> lets you get a feel in what reddits a redditor is active in.
+        With the <a href="%s">/monitor</a> you can find out when a phrase is mentioned in reddit's comments and submissions.<br/>
+        More information on the features can be found on the <a href="%s">help page</a>.
+        """ % (url_for('reddits'), url_for('tags'), url_for('search'), url_for('stalk'), url_for('monitor'), url_for('help'))
+    ],
+
+    ["who dunnit?", 
+        """
+        Thomas Misera, studying Knowledge Engineering at Universiteit Maastricht/NL (funds permitting).
+        You can <a href="mailto:thomas at misera dot org">email me</a>, or drop me a line <a href="http://www.reddit.com/message/compose/?to=modemuser">on reddit</a>.
+        """
+    ],
+    
+    ["but... how?", 
+        """
+        Magic. Also used python, werkzeug, postgres, sqlalchemy, mako, markdown, jquery, memcached. 
+        Running on apache with mod_wsgi. 
+        """
+    ],
+    
+    ["thanks", 
+        """
+        Thanks to reddit for providing content and API. 
+        Thanks to the redditors for gathering all that content, and being an awesome community. 
+        Thanks to the giants on whose shoulders I stand. 
+        """
+    ],
+]
+%>
+
+<h3>meta-metareddit</h3>
+
+<dl>
+%for c in content:
+    <dt class="title">${c[0]}</dt>
+    <dd>
+        ${c[1]}
+    </dd>
+%endfor
+</dl>

@@ -1,0 +1,29 @@
+<%inherit file="base.html"/>
+<%def name="pagetitle()"><% return 'all about reddit' %></%def>
+<!-- 
+${chr(10).join("".join((" ",".")[c] for c in l)for l in reduce(lambda s,n,w=90:s+[[w>>(s[-1][i-1]*4+s[-1][i]*2+s[-1][(i+1)%len(s[0])])&1 for i in range(len(s[-1]))]],range(31),[[0]*31+[1]+[0]*31]))}
+//-->
+<h3>Welcome</h3>
+<p>
+    Below is a random selection of reddits, click on one and the description appears. 
+    Add a tag or two for your fellow redditors. 
+    To get a better picture of what the reddit is about, click the [+] to see the current top five submissions.
+</p>
+
+${self.func.subreddit_cloud(subreddits)}
+<p class="pagination"><a href="${url_for('reddits')}">more...</a></p>
+
+<br/>
+
+<h3>Custom Logos</h3>
+<p>
+    Some reddits have custom logos, here is a random selection.
+</p>
+%for logo in logos:
+    <a href="${url_for('subreddit', name=logo.url)}" class="subreddit">
+        <img src="${url_for('static', cat='logos', file=logo.url + '.png')}" 
+            title="${logo.url} (${logo.subscribers} subscribers)" class="logo"/>
+    </a>
+%endfor
+
+<p class="pagination"><a href="${url_for('logos')}">more...</a></p>

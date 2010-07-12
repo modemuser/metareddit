@@ -1,0 +1,79 @@
+<%inherit file="base.html"/>
+
+<%
+content = (
+    ("""<a href="%s">/reddits</a>""" % url_for('reddits'), 
+        """
+        To show as many reddits at a time as possible, there is the cloud view. 
+        The more subscribers, the bigger the font; the more recent the last submission, the darker the font.
+        You can also view the reddits as a list sorted by subscriber number. 
+        <br/>
+        When you click a on a subreddit name a description appears, 
+        and clicking on the (+) gets the current top five submissions from reddit.
+        <br/>
+        About half of all reddits have no submissions, these are not listed here. 
+        About half have a couple of subscribers or less. 
+        To see how many reddits have very few subscribers, 
+        have a look at this <a href="http://i.imgur.com/lpqY0">graph</a>. 
+        <br/>
+        Most data is not pulled live from reddit, but saved for some time, so the numbers can be a bit off. 
+        """
+    ),
+
+    ("""<a href="%s">/tags</a>""" % url_for('tags'), 
+        """
+        You can tag subreddits, and you can vote the tags on a subreddit up or down.
+        Tags are green and in square brackets to distinguish them from subreddits.
+        Tags with a positive score appear in <a href="%s">/tags</a>.
+        <br/>
+        This is a work in progress. Based on the tags, something like 
+        <a href="http://s272568090.onlinehome.us/reddit/karmanaut-redditmap.html">karmanaut's reddit map</a>,
+        but interactive, would be nice.
+        """ % url_for('tags')
+    ),
+
+    ("""<a href="%s">/logos</a>""" % url_for('logos'),
+        """
+        Some reddits have custom logos in their headers. This feature lets you browse the biggest couple of thousand reddits by their logos.
+        """    
+    ),
+
+    ("""<a href="%s">/search</a>""" % url_for('search'), 
+        """
+        Reddit's own search doesn't work very well because it only looks in titles, and not in the comments.
+        Google indexes more of reddit but searching there involves a lot of typing, this is what you can do here, quicker.
+        <br/>
+        Basically, searching for "cats" in both the "pics" and "WTF" subreddits is equivalent to this in Google:<br />
+        "cats site:reddit.com/r/pics/comments OR site:reddit.com/r/WTF/comments"<br />
+        Additionally, the results are filtered to remove duplicates and other unwanted stuff, 
+        links to mobile pages are changed to point to the normal pages, and the addresses shown always include the subreddit. 
+        <br/>
+        For your convenience, there is a <a href="#" onclick="window.external.AddSearchProvider('%s')">search plugin</a>. 
+        """ % (url_for('static', file='metareddit.xml', _external=True))
+    ),
+    
+    ("""<a href="%s">/monitor</a>""" % url_for('monitor'), 
+        """
+        This lets you monitor all new comments, submission titles and descriptions posted to reddit for the mention of a word or phrase. It allows you to find out when people talk about you, a reddit you created, or a topic that interests you.<br/>
+        Monitoring starts when you enter a term, and stops when nobody requested that information for some time.<br/>
+        If you are logged in to metareddit, every term you enter in the <a href="%s">form</a> appears as a summary on your (private) userpage; just click your name in the top right corner.
+        """ % url_for('monitor')
+    ),
+ 
+    ("""<a href="%s">/stalk</a>""" % url_for('stalk'), 
+        """To get an idea in which reddits a redditor is active, their recent comments and submissions are scanned."""
+    ),
+    
+)
+%>
+
+<h3>features explained</h3>
+
+<dl>
+%for c in content:
+    <dt class="title">${c[0]}</dt>
+    <dd>
+        ${c[1]}
+    </dd>
+%endfor
+</dl>

@@ -1,0 +1,18 @@
+<%inherit file="base.html"/>
+
+<h2>${user.name}</h2>
+
+Added ${len(user.tags)} tags to reddits.<br/>
+Voted ${len(user.votes)} times on tags.<br/>
+
+<br/>
+
+%for m in user.monitoring:
+<div id="monitoring_${m.keyword.hash}">
+<a href="#" 
+    onclick="remove_monitoring('${m.keyword.hash}')" 
+    class="selected bold" 
+    title="remove from userpage">X</a>
+    ${self.func.print_mentions(m.keyword, limit=10)}
+</div>
+%endfor

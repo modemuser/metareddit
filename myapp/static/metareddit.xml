@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+   <ShortName>metareddit</ShortName>
+   <Description>search reddit.com, filter by subreddits.</Description>
+   <Tags>reddit</Tags>
+   <Url type="text/html" 
+       template="http://metareddit.memtropy.com/search?q={searchTerms}&amp;r="/>
+   <Image height="32" width="32" type="image/png">http://metareddit.memtropy.com/static/images/favicon32.png</Image>
+ </OpenSearchDescription>

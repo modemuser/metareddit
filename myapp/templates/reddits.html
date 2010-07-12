@@ -1,0 +1,107 @@
+<%inherit file="base.html"/>
+<%
+    q = querystring.get('q', None)
+    t = querystring.get('t', None)
+    s = querystring.get('s', None)
+    l = querystring.get('l', None)
+    o = querystring.get('o', None)
+%>
+
+
+<div id="choice">
+    %for f in ('biggest', 'active', 'over18', 'new', 'inactive', 'dead', 'self', 'media'):
+        <a ${'class="selected"' if filter==f else ''} href="${url_for('reddits', view=view, filter=f)}">${f}</a> |
+    %endfor
+    <a ${'class="selected"' if filter=='filter' else ''} href="${url_for('reddits', view=view, filter='filter')}">filter</a>
+</div>
+
+<br/>
+
+%if filter == 'filter':
+<div>
+<form id="adv" action="${url_for('reddits', view=view, filter=filter)}">
+Min subscribers     
+    <select name="s" onchange="submit()">
+        <option ${'selected="selected"' if s=='10' else''} value="10">10</option>
+        <option ${'selected="selected"' if not s or s=='100' else''} value="100">100</option>
+        <option ${'selected="selected"' if s=='1000' else''} value="1000">1000</option>
+        <option ${'selected="selected"' if s=='10000' else''} value="10000">10000</option>
+    </select>    
+Last post 
+    <select name="l" onchange="submit()">
+        <option ${'selected="selected"' if not l or l=='1' else''} value="1">today</option>
+        <option ${'selected="selected"' if l=='7' else''} value="7">this week</option>
+        <option ${'selected="selected"' if l=='30' else''} value="30">this month</option>
+        <option ${'selected="selected"' if l=='90' else''} value="90">this quarter</option>
+        <option ${'selected="selected"' if l=='365' else''} value="365">this year</option>
+        <option ${'selected="selected"' if l and int(l)>365 else''} value="10000">any time</option>
+    </select>
+Over18 
+    <select name="o" onchange="submit()">
+        <option ${'selected="selected"' if o=='False' else ''} value="False">no</option>
+        <option ${'selected="selected"' if o=='True' else ''} value="True">only</option>
+        <option ${'selected="selected"' if not o or o == 'all' else ''} value="all">all</option>
+    </select>
+%if q:
+    <input type="hidden" name="q" value="${q}"/>
+%endif
+%if t:
+    <input type="hidden" name="t" value="${t}"/>
+%endif
+</form>
+</div>
+<br/>
+%endif
+
+<div class="title">
+Showing 
+<strong>
+%if pagination:
+    ${pagination.count}
+%else:
+    ${len(subreddits)}
+%endif
+</strong>
+reddits 
+%if q:
+    containing <em>${q}</em>
+%endif
+%if t:
+    tagged <strong>[${t}]</strong>
+%endif
+</div>
+
+<div id="view">
+    <a ${'class="selected"' if view=='cloud' else ''} href="${url_for('reddits', view='cloud', filter=filter, q=q,s=s,l=l,o=o,t=t)}">cloud</a> | 
+    <a ${'class="selected"' if view=='list' else ''} href="${url_for('reddits', view='list', filter=filter, q=q,s=s,l=l,o=o,t=t)}">list</a>
+</div>
+    
+%if view == 'list':
+    <div id="list">
+        %for i, subreddit in enumerate(pagination.entries):
+            ${(pagination.page-1)*pagination.per_page+i+1}.
+            <a class="subreddit" 
+                href="${url_for('subreddit', name=subreddit.url, _external=False)}" 
+                title="${subreddit.title} (${subreddit.subscribers} subscribers)">${subreddit.url}</a>
+            <br/>
+        %endfor
+    </div>
+
+    <p class="pagination">
+    %if pagination.has_previous or pagination.has_next:
+        view more:
+    %endif
+    %if pagination.has_previous:
+        <a href="${pagination.previous(view='list', filter=filter, q=q,s=s,l=l,o=o,t=t)}">prev</a>
+    %endif
+    %if pagination.has_previous and pagination.has_next:
+        |
+    %endif
+    %if pagination.has_next:
+        <a href="${pagination.next(view='list', filter=filter, q=q,s=s,l=l,o=o,t=t)}">next</a>
+    %endif
+    </p>
+
+%elif view == 'cloud':
+    ${self.func.subreddit_cloud(subreddits)}
+%endif

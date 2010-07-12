@@ -1,0 +1,13 @@
+<%inherit file="base.html"/>
+
+%if len(subreddits) == 1:
+<h3>Subreddit details</h3>
+%else:
+<h3>Multireddit details</h3>
+<span class="title">Showing ${len(subreddits)} reddits:</span>
+%endif
+%for subreddit in subreddits:
+<div id="info">
+    ${self.func.subreddit(subreddit)}
+</div>
+%endfor

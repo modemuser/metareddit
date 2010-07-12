@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<%namespace name="func" file="functions.html" inheritable="True" />
+<%
+    from myapp.lib.db.queries import total_reddit_count
+    from myapp.config import google_api_key, compress_js
+    uri = self.uri.split('.')[-2] 
+    try:
+        pagetitle = self.pagetitle()
+    except:
+        pagetitle = uri
+    if compress_js:
+        gsearch = 'gsearch.min.js'
+        scripts = [
+            'metareddit.js',
+        ]
+    else:
+        gsearch = 'gsearch.js'
+        scripts = [ 
+            'jquery.cookie.js',
+            'jquery.scrollTo.js',
+            'jquery.simplemodal.js',
+            'jquery.autocomplete.js',
+            'script.js',
+        ]
+%>
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+    <head>
+        <title>metareddit - ${pagetitle}</title>
+        <meta http-equiv="Content-Type" content="text/xml; charset=utf-8" />
+        <meta http-equiv="Content-Style-Type" content="text/css" />
+        <meta http-equiv="Content-Script-Type" content="text/javascript" />
+        <link rel="icon" type="img/png" href="${url_for('static', cat='images', file='favicon32.png')}"/>
+        <link rel="search" type="application/opensearchdescription+xml" href="${url_for('static', file='metareddit.xml')}" title="metareddit search" />
+        <link rel="stylesheet" href="${url_for('static', cat='css', file='styles.css')}" type= "text/css" media="all" />
+        <link rel="stylesheet" href="${url_for('static', cat='css', file='jquery.autocomplete.css')}" type= "text/css" media="all" />
+    %if uri == 'search':
+        <script src="http://www.google.com/jsapi?key=${google_api_key}" type="text/javascript"></script>
+        <script type="text/javascript" src="${url_for('static', cat='js', file=gsearch)}"></script>
+    %endif
+        <script type="text/javascript" src="${url_for('static', cat='js', file='jquery.js')}"></script>
+    %for script in scripts:
+        <script type="text/javascript" src="${url_for('static', cat='js', file=script)}"></script>
+    %endfor
+    </head>
+    <body>
+        <div id="container">
+            <div id="header">
+                <a href="/"><img id="header-img" alt="" src="${url_for('static', cat='images', file='header.png')}"/></a>
+	            <ul class="tabmenu">
+                    %for i in ['reddits', 'tags', 'logos', 'search', 'monitor', 'stalk']:
+                        <li ${'class="selected"' if uri.startswith(i) else ''}><a href="${url_for(i)}">${i}</a></li>
+                    %endfor
+                </ul>
+                <div id="header-bottom-right">
+                    {% header %}
+                </div>
+            </div>
+            <div class="side">
+                <form id="search" action="${url_for('reddits', view='cloud', filter='filter')}">
+                    <input id="auto" class="gray" type="text" name="q" value="search for reddits" onfocus="clear_input(this);" />
+                    <input type="hidden" name="l" value="10000" />
+                    <input type="hidden" name="s" value="10" />
+                </form>
+                <h2>metareddit.com</h2>
+                    <p>Keeping track of ${func.nice_number(total_reddit_count())} reddits</p>
+                    <table>
+                        <tr><td>what this is:</td><td><a href="${url_for('about')}">about this site</a></td></tr>
+                        <tr><td>how to use it:</td><td><a href="${url_for('help')}">help page</a></td></tr>
+                        <tr><td>more tools:</td><td><a href="${url_for('links')}">links to them</a></td></tr>
+                    </table>
+
+                    <p>If you like this site, please consider a small  
+                        <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J84YYT7DEWCNC">donation</a>.
+                    </p>
+                <div class="bottom">
+                    created by <a href="http://www.reddit.com/message/compose/?to=modemuser">modemuser</a>
+                    <a href="http://www.validome.org/referer" class="valid"><img style="border:none"
+                        src="${url_for('static', cat='images', file='xhtml.gif')}"
+                        alt="Valid XHTML 1.0"/></a>
+                </div>
+            </div>    
+            <div class="clearleft"></div>
+            <div id="content">
+                
+            {% highlight %}
+            
+            ${self.body()}
+
+            </div>
+            <div class="clear"></div>
+            <div id="footer">
+                metareddit is not associated with reddit.com, CondeNet or any of their affiliates. 
+                All trademarks are property of their owners.
+            </div>
+        </div>
+        {% popup %}
+    </body>
+</html>

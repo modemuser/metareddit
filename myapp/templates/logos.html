@@ -1,0 +1,40 @@
+<%inherit file="base.html" />
+
+
+<div id="choice">
+    <a ${'class="selected"' if view=='random' else ''} href="${url_for('logos', view='random')}">random</a> | 
+    <a ${'class="selected"' if view=='all' else ''} href="${url_for('logos', view='all')}">all</a> | 
+    <a ${'class="selected"' if view=='over18' else ''} href="${url_for('logos', view='over18')}">over18</a>
+</div>
+
+%if logos:
+    %for logo in logos:
+        ${show_logo(logo)}
+    %endfor
+%elif pagination:    
+    %for logo in pagination.entries:
+        ${show_logo(logo)}
+    %endfor
+    
+    <p class="pagination">
+    %if pagination.has_previous or pagination.has_next:
+        view more:
+    %endif
+    %if pagination.has_previous:
+        <a href="${pagination.previous(view=view)}">prev</a>
+    %endif
+    %if pagination.has_previous and pagination.has_next:
+        |
+    %endif
+    %if pagination.has_next:
+        <a href="${pagination.next(view=view)}">next</a>
+    %endif
+    </p>
+%endif
+
+<%def name="show_logo(logo)">
+    <a href="${url_for('subreddit', name=logo.url)}" class="subreddit">
+        <img src="${url_for('static', cat='logos', file=logo.url + '.png')}" 
+            title="${logo.url} (${logo.subscribers} subscribers)" class="logo"/>
+    </a>
+</%def>
