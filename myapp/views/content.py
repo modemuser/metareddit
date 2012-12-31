@@ -161,7 +161,7 @@ def user(request, username):
 
 
 def user_reddits(request):
-    username = request.args.get('user')
+    username = request.args.get('user').strip()
     if not username:
         cached = serve_response('stalk.html', username=None)
     else:
